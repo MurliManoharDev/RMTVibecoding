@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}View {{ request_type }} Requests - Aura RMT{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1 class="page-title">{{ request_type }} Requests</h1>
+    
+    <!-- Controls -->
+    <div class="controls-section">
+        <div class="search-controls">
+            <input type="text" id="searchInput" class="form-input" 
+                   placeholder="Search {{ request_type.lower() }} requests..." 
+                   onkeyup="filterRequests(this.value, document.getElementById('statusFilter').value)">
+            
+            <select id="statusFilter" class="form-select" 
+                    onchange="filterRequests(document.getElementById('searchInput').value, this.value)">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <!-- Requests Table -->
+    <div class="table-container">
+        <table class="table requests-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Created By</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if requests %}
+                    {% for request in requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.title }}</td>
+                        <td>{{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</td>
+                        <td>
+                            <span class="status-badge status-{{ request.status }}">
+                                {{ request.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-{{ request.priority }}">
+                                {{ request.priority.title() }}
+                            </span>
+                        </td>
+                        <td>{{ request.created_by or 'System' }}</td>
+                        <td>{{ request.created_date.strftime('%Y-%m-%d %H:%M') if request.created_date else 'N/A' }}</td>
+                        <td>
+                            <div class="action-dropdown">
+                                <select data-request-id="{{ request.id }}" onchange="if(this.value) handleStatusUpdate(this.dataset.requestId, this.value); this.value='';">
+                                    <option value="">Change Status</option>
+                                    {% if request.status != 'approved' %}
+                                    <option value="approved">Approve</option>
+                                    {% endif %}
+                                    {% if request.status != 'rejected' %}
+                                    <option value="rejected">Reject</option>
+                                    {% endif %}
+                                    {% if request.status != 'completed' %}
+                                    <option value="completed">Complete</option>
+                                    {% endif %}
+                                    {% if request.status != 'pending' %}
+                                    <option value="pending">Reset to Pending</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="no-data">No {{ request_type.lower() }} requests found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Summary -->
+    <div class="summary-section">
+        <p><strong>Total {{ request_type }} Requests:</strong> {{ requests|length }}</p>
+    </div>
+</div>
+
+<style>
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.search-controls {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    max-width: 600px;
+}
+
+.search-controls input,
+.search-controls select {
+    flex: 1;
+}
+
+.priority-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-low { background-color: #95a5a6; color: white; }
+.priority-medium { background-color: #f39c12; color: white; }
+.priority-high { background-color: #e74c3c; color: white; }
+
+.action-dropdown select {
+    background-color: #34495e;
+    color: white;
+    border: 1px solid #34495e;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.no-data {
+    text-align: center;
+    font-style: italic;
+    color: #95a5a6;
+}
+
+.summary-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #2c3e50;
+    border-radius: 8px;
+}
+</style>
+{% endblock %} 

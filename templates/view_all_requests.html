@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}View All Requests - Aura RMT{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1 class="page-title">All Requests</h1>
+    
+    <!-- Search and Filter Controls -->
+    <div class="controls-section">
+        <div class="search-controls">
+            <input type="text" id="searchInput" class="form-input" 
+                   placeholder="Search requests..." 
+                   onkeyup="filterRequests(this.value, document.getElementById('statusFilter').value)">
+            
+            <select id="statusFilter" class="form-select" 
+                    onchange="filterRequests(document.getElementById('searchInput').value, this.value)">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <!-- Requests Table -->
+    <div class="table-container">
+        <table class="table requests-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Created By</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if requests %}
+                    {% for request in requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>
+                            <span class="type-badge type-{{ request.type }}">
+                                {{ request.type.title() }}
+                            </span>
+                        </td>
+                        <td>{{ request.title }}</td>
+                        <td>
+                            <span class="status-badge status-{{ request.status }}">
+                                {{ request.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-{{ request.priority }}">
+                                {{ request.priority.title() }}
+                            </span>
+                        </td>
+                        <td>{{ request.created_by or 'System' }}</td>
+                        <td>{{ request.created_date.strftime('%Y-%m-%d %H:%M') if request.created_date else 'N/A' }}</td>
+                        <td>
+                            <div class="action-dropdown">
+                                <select data-request-id="{{ request.id }}" onchange="if(this.value) handleStatusUpdate(this.dataset.requestId, this.value); this.value='';">
+                                    <option value="">Change Status</option>
+                                    {% if request.status != 'approved' %}
+                                    <option value="approved">Approve</option>
+                                    {% endif %}
+                                    {% if request.status != 'rejected' %}
+                                    <option value="rejected">Reject</option>
+                                    {% endif %}
+                                    {% if request.status != 'completed' %}
+                                    <option value="completed">Complete</option>
+                                    {% endif %}
+                                    {% if request.status != 'pending' %}
+                                    <option value="pending">Reset to Pending</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="no-data">No requests found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="stats-section">
+        <div class="stat-card">
+            <h3>Total Requests</h3>
+            <span class="stat-number">{{ requests|length }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Pending</h3>
+            <span class="stat-number">{{ requests|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Approved</h3>
+            <span class="stat-number">{{ requests|selectattr('status', 'equalto', 'approved')|list|length }}</span>
+        </div>
+        <div class="stat-card">
+            <h3>Completed</h3>
+            <span class="stat-number">{{ requests|selectattr('status', 'equalto', 'completed')|list|length }}</span>
+        </div>
+    </div>
+</div>
+
+<style>
+.controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.search-controls {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    max-width: 600px;
+}
+
+.search-controls input,
+.search-controls select {
+    flex: 1;
+}
+
+.type-badge, .priority-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-add { background-color: #27ae60; color: white; }
+.type-transfer { background-color: #3498db; color: white; }
+.type-terminate { background-color: #e74c3c; color: white; }
+
+.priority-low { background-color: #95a5a6; color: white; }
+.priority-medium { background-color: #f39c12; color: white; }
+.priority-high { background-color: #e74c3c; color: white; }
+
+.action-dropdown select {
+    background-color: #34495e;
+    color: white;
+    border: 1px solid #34495e;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.no-data {
+    text-align: center;
+    font-style: italic;
+    color: #95a5a6;
+}
+
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.stat-card {
+    background-color: #2c3e50;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    color: #3498db;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+}
+</style>
+{% endblock %} 

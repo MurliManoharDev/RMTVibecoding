@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMT Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #edf2f7; /* gray-200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a0aec0; /* gray-500 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-600 */
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc; /* gray-100 */
+        }
+        /* Active sidebar link */
+        .sidebar-link-active {
+            background-color: #e0f2fe; 
+            color: #0ea5e9; 
+            font-weight: 600;
+            border-left: 3px solid #0ea5e9; 
+            padding-left: calc(0.5rem - 3px); 
+        }
+        .sidebar-link:hover { 
+            background-color: #f0f9ff; 
+            color: #0369a1; 
+        }
+        /* Page sections */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn {
+            @apply px-4 py-2 rounded-md font-medium shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        .btn-primary {
+            @apply bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500;
+        }
+        .btn-secondary { /* Added for consistency if needed elsewhere */
+            @apply bg-slate-600 text-white hover:bg-slate-700 focus:ring-slate-500;
+        }
+        .btn-success {
+            @apply bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
+        }
+        .btn-warning { /* Added for consistency */
+            @apply bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-400;
+        }
+        .btn-danger { /* Added for consistency */
+            @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+        }
+        .btn-outline-primary { 
+            @apply bg-transparent text-sky-600 border border-sky-600 hover:bg-sky-50;
+        }
+        .input-field { 
+            @apply mt-1 block w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 sm:text-sm;
+        }
+        .label-text { /* For form field labels */
+            @apply text-sm font-medium text-gray-700;
+        }
+        .card { /* General card style, also used for home screen items */
+             @apply bg-white p-4 rounded-xl shadow-lg; /* Adjusted padding for home screen cards */
+        }
+        .form-section-card { 
+             @apply bg-white p-6 md:p-8 rounded-xl shadow-xl;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="app-container" class="min-h-screen flex flex-col">
+        <nav class="bg-sky-700 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-sky-300"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                <h1 class="text-2xl font-semibold">Resource Management Tool (RMT)</h1>
+            </div>
+            <div class="text-sm text-sky-200">
+                Notes Link: <a href="#" class="underline hover:text-sky-100">N:/GLCL/Notes/....</a>
+            </div>
+        </nav>
+
+        <div class="flex flex-1 overflow-hidden">
+            <aside id="sidebar" class="w-64 bg-white p-4 space-y-1 border-r border-gray-200 h-full overflow-y-auto shadow-sm">
+            </aside>
+
+            <main id="main-content" class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50">
+                <section id="home-screen" class="page-section active">
+                    <h2 class="text-3xl font-semibold text-sky-700 mb-8">RMT Options</h2>
+                    <div class="space-y-5 max-w-4xl mx-auto" id="home-screen-options-container">
+                        </div>
+                </section>
+
+                <section id="addForm-screen" class="page-section">
+                </section>
+
+                <section id="transferForm-screen" class="page-section">
+                </section>
+
+                <section id="termForm-screen" class="page-section">
+                </section>
+
+                <section id="viewRequests-screen" class="page-section">
+                </section>
+
+                <section id="reports-screen" class="page-section">
+                    <h2 class="text-3xl font-semibold text-sky-700 mb-8">Report Generation</h2>
+                    <div class="bg-white p-8 rounded-xl shadow-lg text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-sky-500 mb-5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                        <p class="text-gray-700 text-lg">Report generation functionality will be available here.</p>
+                        <p class="text-gray-500 mt-2">This section will allow users to configure and generate various reports based on RMT data.</p>
+                        <button type="button" class="btn btn-primary mt-6">Generate Sample Report</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html> 

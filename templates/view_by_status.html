@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}View By Status - Aura RMT{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <h1 class="page-title">View Requests By Status</h1>
+    
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <button class="status-tab active" onclick="showStatus('all')">All</button>
+        <button class="status-tab" onclick="showStatus('pending')">Pending</button>
+        <button class="status-tab" onclick="showStatus('approved')">Approved</button>
+        <button class="status-tab" onclick="showStatus('rejected')">Rejected</button>
+        <button class="status-tab" onclick="showStatus('completed')">Completed</button>
+    </div>
+    
+    <!-- Status Sections -->
+    <div id="all-section" class="status-section active">
+        <h2>All Requests</h2>
+        <div class="request-cards">
+            <!-- This would be populated with data from the backend -->
+            <div class="placeholder-message">
+                <p>This section will show all requests grouped by status.</p>
+                <p>Use the <a href="{{ url_for('view_all_requests') }}">View All Requests</a> page to see the full list.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="pending-section" class="status-section">
+        <h2>Pending Requests</h2>
+        <div class="request-cards">
+            <div class="placeholder-message">
+                <p>Pending requests will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="approved-section" class="status-section">
+        <h2>Approved Requests</h2>
+        <div class="request-cards">
+            <div class="placeholder-message">
+                <p>Approved requests will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="rejected-section" class="status-section">
+        <h2>Rejected Requests</h2>
+        <div class="request-cards">
+            <div class="placeholder-message">
+                <p>Rejected requests will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="completed-section" class="status-section">
+        <h2>Completed Requests</h2>
+        <div class="request-cards">
+            <div class="placeholder-message">
+                <p>Completed requests will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="{{ url_for('view_all_requests') }}" class="btn btn-primary">View All Requests</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #34495e;
+}
+
+.status-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.status-tab:hover {
+    color: #3498db;
+    background-color: #2c3e50;
+}
+
+.status-tab.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+    background-color: #2c3e50;
+}
+
+.status-section {
+    display: none;
+    padding: 2rem 0;
+}
+
+.status-section.active {
+    display: block;
+}
+
+.status-section h2 {
+    color: #3498db;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.request-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.placeholder-message {
+    background-color: #2c3e50;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    color: #bdc3c7;
+}
+
+.placeholder-message a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.placeholder-message a:hover {
+    text-decoration: underline;
+}
+
+.quick-actions {
+    margin-top: 3rem;
+    padding: 2rem;
+    background-color: #2c3e50;
+    border-radius: 8px;
+}
+
+.quick-actions h3 {
+    color: #3498db;
+    margin-bottom: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+}
+</style>
+
+<script>
+function showStatus(status) {
+    // Hide all sections
+    const sections = document.querySelectorAll('.status-section');
+    sections.forEach(section => section.classList.remove('active'));
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.status-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected section
+    document.getElementById(status + '-section').classList.add('active');
+    
+    // Add active class to selected tab
+    event.target.classList.add('active');
+}
+</script>
+{% endblock %} 
