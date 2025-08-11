@@ -4,14 +4,44 @@ import os
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-change-in-production-' + str(hash(os.urandom(32))))
+
+# Production-ready secret key configuration
+if 'WEBSITE_HOSTNAME' in os.environ:  # Azure App Service environment variable
+    # Production mode
+    app.secret_key = os.environ.get('SECRET_KEY', os.urandom(32).hex())
+    app.config['DEBUG'] = False
+else:
+    # Development mode
+    app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-change-in-production-' + str(hash(os.urandom(32))))
+    app.config['DEBUG'] = True
 
 # Database configuration
-DATABASE = 'rmt_database.db'
+# In production, use mounted Azure Files storage for persistence
+# In development, use local file
+if 'WEBSITE_HOSTNAME' in os.environ:
+    # Production: Use mounted storage path
+    DATABASE = os.environ.get('DATABASE_PATH', '/home/data/rmt_database.db')
+    # Ensure the directory exists
+    db_dir = os.path.dirname(DATABASE)
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+else:
+    # Development: Use local path
+    DATABASE = os.environ.get('DATABASE_PATH', 'rmt_database.db')
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, timeout=30)
     conn.row_factory = sqlite3.Row
+    
+    # Enable WAL mode for better concurrency (especially important in production)
+    conn.execute('PRAGMA journal_mode=WAL')
+    
+    # Optimize performance
+    conn.execute('PRAGMA synchronous=NORMAL')
+    
+    # Enable foreign keys
+    conn.execute('PRAGMA foreign_keys=ON')
+    
     return conn
 
 def init_database():
@@ -201,4 +231,6 @@ def update_request_status(request_id):
             conn.close()
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000) 
+    # Only run in development mode
+    if not os.environ.get('WEBSITE_HOSTNAME'):
+        app.run(debug=True, host='0.0.0.0', port=5000) 
