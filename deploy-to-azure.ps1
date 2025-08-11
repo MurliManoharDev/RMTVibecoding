@@ -23,6 +23,50 @@ function Check-Status {
     }
 }
 
+# Check if git is installed
+try {
+    $gitVersion = git --version
+    Write-Host "Git is installed: $gitVersion" -ForegroundColor Green
+} catch {
+    Write-Host "Git is not installed. Please install it first." -ForegroundColor Red
+    exit 1
+}
+
+# Verify we're in a git repository
+if (-not (Test-Path ".git")) {
+    Write-Host "Error: This script must be run from the root of the git repository" -ForegroundColor Red
+    exit 1
+}
+
+# Check current branch and switch to dev if needed
+Write-Host "`nChecking git branch..." -ForegroundColor Yellow
+$currentBranch = git branch --show-current
+if ($currentBranch -ne "dev") {
+    Write-Host "Currently on branch: $currentBranch" -ForegroundColor Yellow
+    Write-Host "Switching to dev branch..." -ForegroundColor Yellow
+    git checkout dev
+    Check-Status "Branch switch to dev"
+} else {
+    Write-Host "Already on dev branch" -ForegroundColor Green
+}
+
+# Pull latest changes from dev branch
+Write-Host "`nPulling latest changes from dev branch..." -ForegroundColor Yellow
+git pull origin dev
+Check-Status "Git pull from dev branch"
+
+# Check for uncommitted changes
+$gitStatus = git status --porcelain
+if ($gitStatus) {
+    Write-Host "`nWarning: You have uncommitted changes:" -ForegroundColor Yellow
+    git status --short
+    $response = Read-Host "`nDo you want to continue with deployment? (y/N)"
+    if ($response -ne 'y' -and $response -ne 'Y') {
+        Write-Host "Deployment cancelled" -ForegroundColor Red
+        exit 1
+    }
+}
+
 # Check if Azure CLI is installed
 try {
     $azVersion = az --version
@@ -129,6 +173,12 @@ if (Test-Path "deploy.zip") {
     Remove-Item "deploy.zip"
 }
 
+# Get current commit hash for tracking
+$commitHash = git rev-parse HEAD
+$commitMessage = git log -1 --pretty=%B
+Write-Host "Deploying from commit: $commitHash" -ForegroundColor Cyan
+Write-Host "Commit message: $commitMessage" -ForegroundColor Cyan
+
 # Create zip file excluding unnecessary files
 Compress-Archive -Path * -DestinationPath deploy.zip -Force -CompressionLevel Optimal
 Check-Status "Deployment package creation"
@@ -184,6 +234,13 @@ Resource Group: $RESOURCE_GROUP
 URL: $APP_URL
 Storage Account: $STORAGE_ACCOUNT
 Secret Key: $SECRET_KEY
+
+Git Information:
+- Branch: dev
+- Commit: $commitHash
+- Commit Message: $commitMessage
+- Deployed By: $env:USERNAME
+- Deployed From: $env:COMPUTERNAME
 
 SQLite Database Configuration:
 - Database Path (in container): /home/data/rmt_database.db
